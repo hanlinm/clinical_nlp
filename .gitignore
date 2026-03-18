@@ -1,4 +1,5 @@
 .env
 clinical_env/
-data/
+data/evaluation_result.csv
+data/test_results.csv
 models/

@@ -17,6 +17,11 @@ st.set_page_config(
 # Load the trained classifier
 @st.cache_resource
 def load_classifier():
+    if not os.path.exists("models/classifier.pkl"):
+        st.info("Training classifier for first time deployment... please wait.")
+        from classifier import build_and_evaluate
+        os.makedirs("models", exist_ok=True)
+        build_and_evaluate()
     with open("models/classifier.pkl", "rb") as f:
         return pickle.load(f)
 
@@ -24,9 +29,12 @@ def load_classifier():
 @st.cache_data
 def load_eval_results():
     if not os.path.exists("data/evaluation_result.csv"):
+        st.info("Running LLM evaluation for first time deployment... please wait.")
+        from evaluator import evaluate_test_set
+        evaluate_test_set()
+    if not os.path.exists("data/evaluation_result.csv"):
         return None
     return pd.read_csv("data/evaluation_result.csv")
-
 classifier = load_classifier()
 eval_df = load_eval_results()
 
