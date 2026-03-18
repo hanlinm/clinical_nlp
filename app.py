@@ -35,6 +35,10 @@ def load_eval_results():
     if not os.path.exists("data/evaluation_result.csv"):
         return None
     return pd.read_csv("data/evaluation_result.csv")
+
+classifier = load_classifier()
+eval_df = load_eval_results()
+
 if eval_df is None:
     st.error("Evaluation results not found. Please run `python evaluator.py` first.")
     st.stop()
