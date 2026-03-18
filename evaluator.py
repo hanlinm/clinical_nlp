@@ -114,7 +114,7 @@ def evaluate_test_set(test_csv: str = "data/test_results.csv",
 
     # save results
     results_df.to_csv('data/evaluation_result.csv', index=False)
-    print(f"\nEvaluation complete. Results saved to data/evaluation_results.csv")
+    print(f"\nEvaluation complete. Results saved to data/evaluation_result.csv")
 
     # Print summary
     valid = results_df[results_df["is_correct"].notna()]
