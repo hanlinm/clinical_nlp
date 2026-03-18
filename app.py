@@ -17,24 +17,32 @@ st.set_page_config(
 # Load the trained classifier
 @st.cache_resource
 def load_classifier():
-    if not os.path.exists("models/classifier.pkl"):
-        with st.status("Training classifier for first deployment..."):
-            from classifier import build_and_evaluate
-            os.makedirs("models", exist_ok=True)
-            build_and_evaluate()
-    with open("models/classifier.pkl", "rb") as f:
-        return pickle.load(f)
+    try:
+        if not os.path.exists("models/classifier.pkl"):
+            with st.spinner("Training classifier for first deployment..."):
+                from classifier import build_and_evaluate
+                os.makedirs("models", exist_ok=True)
+                build_and_evaluate()
+        with open("models/classifier.pkl", "rb") as f:
+            return pickle.load(f)
+    except Exception as e:
+        st.error(f"Error loading classifier: {str(e)}")
+        return None
 
 # Load evaluation results
 @st.cache_data
 def load_eval_results():
-    if not os.path.exists("data/evaluation_result.csv"):
-        with st.status("Running LLM evaluation for first deployment... (2-3 mins)"):
-            from evaluator import evaluate_test_set
-            evaluate_test_set()
-    if not os.path.exists("data/evaluation_result.csv"):
+    try:
+        if not os.path.exists("data/evaluation_result.csv"):
+            with st.spinner("Running LLM evaluation for first deployment... (2-3 mins)"):
+                from evaluator import evaluate_test_set
+                evaluate_test_set()
+        if not os.path.exists("data/evaluation_result.csv"):
+            return None
+        return pd.read_csv("data/evaluation_result.csv")
+    except Exception as e:
+        st.error(f"Error loading evaluation results: {str(e)}")
         return None
-    return pd.read_csv("data/evaluation_result.csv")
 
 classifier = load_classifier()
 eval_df = load_eval_results()
@@ -102,7 +110,7 @@ twice daily. Neurology follow-up scheduled in 4 weeks.""",
 
     col1, col2 = st.columns([1, 3])
     with col1:
-        classify_btn = st.button("🔍 Classify + Evaluate", type="primary", use_container_width=True)
+        classify_btn = st.button("🔍 Classify + Evaluate", type="primary", width='stretch')
     with col2:
         st.caption("⚠️ LLM evaluation takes 5–10 seconds and uses a small amount of OpenAI credits")
 
@@ -125,7 +133,7 @@ twice daily. Neurology follow-up scheduled in 4 weeks.""",
                 "Specialty": classes,
                 "Confidence": probabilities
             }).sort_values("Confidence", ascending=False)
-            st.dataframe(prob_df, use_container_width=True, hide_index=True)
+            st.dataframe(prob_df, width='stretch', hide_index=True)
 
         st.divider()
 
@@ -202,7 +210,7 @@ with tab2:
     st.subheader("Misclassification Analysis")
     wrong_display = wrong[["true_label", "predicted_label", "reasoning", "is_boundary"]].copy()
     wrong_display.columns = ["True Label", "Predicted", "LLM Reasoning", "Boundary Case"]
-    st.dataframe(wrong_display, use_container_width=True, hide_index=True)
+    st.dataframe(wrong_display, width='stretch', hide_index=True)
 
     st.divider()
 
@@ -210,4 +218,4 @@ with tab2:
     st.subheader("Correct Predictions")
     correct = eval_df[eval_df["is_correct"] == True][["true_label", "predicted_label", "confidence", "reasoning"]]
     correct.columns = ["True Label", "Predicted", "LLM Confidence", "LLM Reasoning"]
-    st.dataframe(correct, use_container_width=True, hide_index=True)
+    st.dataframe(correct, width='stretch', hide_index=True)
